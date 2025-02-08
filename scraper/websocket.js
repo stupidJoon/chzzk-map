@@ -48,7 +48,7 @@ function getChats(channelId, chatId, onClose) {
     }
     else if (cmd === 93101) {
       const chats = json.bdy;
-
+      
       for (const chat of chats) {
         // pool.query(
         //   `INSERT INTO chat (cid, uid)

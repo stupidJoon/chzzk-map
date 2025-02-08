@@ -41,6 +41,7 @@ const getChannel = (channelId) => fetch(
 
 const scrapingChannels = new Set();
 
+findChannels();
 async function findChannels() {
   let lives = await getAvailableLives(1000);
   lives = lives.filter((live) => live.adult === false);
