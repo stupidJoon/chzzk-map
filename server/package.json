@@ -4,6 +4,7 @@
     "cidr-matcher": "^2.1.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "mysql2": "^3.12.0"
+    "mysql2": "^3.12.0",
+    "node-schedule": "^2.1.1"
   }
 }
