@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 
 export function Header({ data }) {
   return (
-    <div className='absolute top-0 right-0 m-8 flex gap-2'>
+    <div className='absolute bottom-0 right-0 m-6 flex gap-4 sm:bottom-auto sm:top-0'>
       <AboutDialog data={data} />
       <DarkmodeButton />
     </div>
