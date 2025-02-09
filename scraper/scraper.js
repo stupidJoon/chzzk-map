@@ -1,4 +1,4 @@
-// const pool = require('./db.js');
+const pool = require('./db.js');
 const getChats = require('./websocket.js');
 
 const getLives = (next) => {
@@ -17,7 +17,7 @@ const getAvailableLives = async (minUser) => {
     const content = await getLives(next);
     const lives = content.data;
     const filteredLives = lives.filter((live) => live.concurrentUserCount >= minUser);
-    availableLives.push(...lives);
+    availableLives.push(...filteredLives);
     next = content.page.next;
 
     if (filteredLives.length < lives.length) break;
@@ -41,7 +41,6 @@ const getChannel = (channelId) => fetch(
 
 const scrapingChannels = new Set();
 
-findChannels();
 async function findChannels() {
   let lives = await getAvailableLives(1000);
   lives = lives.filter((live) => live.adult === false);
@@ -56,12 +55,12 @@ async function findChannels() {
     const { channel, chatChannelId } = liveDetail;
     const { followerCount, channelImageUrl } = await getChannel(channelId);
 
-    // await pool.query(
-    //   `INSERT INTO channel (id, name, follower, image)
-    //   VALUES (?, ?, ?, ?)
-    //   ON DUPLICATE KEY UPDATE name=?, follower=?, image=?`,
-    //   [channelId, channel.channelName, followerCount, channelImageUrl, channel.channelName, followerCount, channelImageUrl],
-    // );
+    await pool.query(
+      `INSERT INTO channel (id, name, follower, image)
+      VALUES (?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE name=?, follower=?, image=?`,
+      [channelId, channel.channelName, followerCount, channelImageUrl, channel.channelName, followerCount, channelImageUrl],
+    );
 
     console.log(`${channelId} channel start scraping`);
     console.log(new Date(Date.now() + 9 * 60 * 60 * 1000), 'current scraping channels', scrapingChannels);

@@ -80,9 +80,9 @@ const port = 3000;
 
 app.use((req, res, next) => {
   console.log(cfMatcher.contains(req.ip), req.ip);
-  if (!cfMatcher.contains(req.ip)) {
-    return res.sendStatus(403);
-  }
+  // if (!cfMatcher.contains(req.ip)) {
+  //   return res.sendStatus(403);
+  // }
   next();
 });
 

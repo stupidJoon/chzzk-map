@@ -1,5 +1,5 @@
 const Websocket = require('ws');
-// const pool = require('./db.js');
+const pool = require('./db.js');
 
 const getInitMsg = (cid) => `
 {
@@ -50,12 +50,12 @@ function getChats(channelId, chatId, onClose) {
       const chats = json.bdy;
       
       for (const chat of chats) {
-        // pool.query(
-        //   `INSERT INTO chat (cid, uid)
-        //   VALUES (?, ?)
-        //   ON DUPLICATE KEY UPDATE cid=?, uid=?, created_at=DEFAULT`,
-        //   [channelId, chat.uid, channelId, chat.uid],
-        // );
+        pool.query(
+          `INSERT INTO chat (cid, uid)
+          VALUES (?, ?)
+          ON DUPLICATE KEY UPDATE cid=?, uid=?, created_at=DEFAULT`,
+          [channelId, chat.uid, channelId, chat.uid],
+        );
       }
     }
   });
