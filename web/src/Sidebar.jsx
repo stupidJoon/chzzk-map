@@ -3,11 +3,12 @@ export function Sidebar({ data, selectedChannel, handleChannelSearch }) {
 
   const relatedChannels = data.links
     .filter((link) => link.source.name === selectedChannel || link.target.name === selectedChannel)
+    .toSorted((a, b) => b.distance - a.distance)
     .slice(0, 10)
     .map((link) => {
       const channel = (link.source.name === selectedChannel) ? link.target : link.source;
       return { ...channel, similarity: link.distance, count: link.inter };
-    }) ?? [];
+    });
 
 
   return (

@@ -2,23 +2,6 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* * {
-  margin: 0;
-}
-
-svg {
-  display: block;
-} */
-
-/* body { */
-/* font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace; */
-/* font-family: system-ui, sans-serif; */
-/* font-family: Seravek, 'Gill Sans Nova', Ubuntu, Calibri, 'DejaVu Sans', source-sans-pro, sans-serif; */
-/* font-family: sans-serif; */
-/* font-family: Avenir, Montserrat, Corbel, 'URW Gothic', source-sans-pro, sans-serif;; */
-/* font-family: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif; */
-/* } */
-
 [list]::-webkit-calendar-picker-indicator {
   display: none !important;
 }
