@@ -2,12 +2,14 @@ const fs = require('fs/promises');
 const schedule = require('node-schedule');
 const pool = require('./db.js');
 
+const CHAT_INTERVAL = '7 DAY';
+
 const nodesQuery = `
   WITH
   valid_chat AS (
       SELECT id, cid, uid
       FROM chat
-      WHERE created_at>=NOW() - INTERVAL 7 DAY
+      WHERE created_at>=NOW() - INTERVAL ${CHAT_INTERVAL}
   )
   SELECT id, name, follower, image
   FROM channel c
@@ -18,7 +20,7 @@ const linksQuery = `
   valid_chat AS (
       SELECT id, cid, uid
       FROM chat
-      WHERE created_at>=NOW() - INTERVAL 7 DAY
+      WHERE created_at>=NOW() - INTERVAL ${CHAT_INTERVAL}
   ),
   valid_channel AS (
       SELECT DISTINCT c.id id
