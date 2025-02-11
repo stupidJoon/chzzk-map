@@ -39,21 +39,21 @@ const columns = [
     header: '#',
     enableSorting: false,
     cell: ({ row, table }) => (table.getSortedRowModel().flatRows.findIndex((flatRow) => flatRow.id === row.id) || 0) + 1,
-    meta: { width: '15%' },
+    meta: { width: 'w-[15%]' },
   },
   columnHelper.accessor('name', {
     header: '채널명',
     enableSorting: false,
-    meta: { width: '35%' },
+    meta: { width: 'w-[35%]' },
   }),
   columnHelper.accessor('similarity', {
     header: '유사도',
     cell: (info) => (info.getValue() * 100).toFixed(2) + '%',
-    meta: { width: '20%' },
+    meta: { width: 'w-[25%]' },
   }),
   columnHelper.accessor('count', {
     header: '중복수',
-    meta: { width: '20%' },
+    meta: { width: 'w-[25%]' },
   }),
 ];
 
@@ -82,15 +82,15 @@ function RelatedChannels({ relatedChannels }) {
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>{headerGroup.headers.map((header) => {
               if (!header.column.getCanSort()) {
-                return <th key={header.id} className={`p-1 text-left text-[0.8rem] w-[${header.column.columnDef.meta.width}]`}>{header.column.columnDef.header}</th>
+                return <th key={header.id} className={`p-1 text-left text-[0.8rem] ${header.column.columnDef.meta.width}`}>{header.column.columnDef.header}</th>
               }
               else if (header.column.getIsSorted()) {
                 const handler = () => setSorting([{ id: header.column.id, desc: true }]);
-                return <th key={header.id} className={`p-1 text-left text-[0.8rem] cursor-pointer w-[${header.column.columnDef.meta.width}]`} onClick={handler}>{header.column.columnDef.header}🔽</th>
+                return <th key={header.id} className={`p-1 text-left text-[0.8rem] cursor-pointer ${header.column.columnDef.meta.width}`} onClick={handler}>{header.column.columnDef.header}🔽</th>
               }
               else {
                 const handler = () => setSorting([{ id: header.column.id, desc: true }]);
-                return <th key={header.id} className={`p-1 text-left text-[0.8rem] cursor-pointer w-[${header.column.columnDef.meta.width}]`} onClick={handler}>{header.column.columnDef.header}</th>
+                return <th key={header.id} className={`p-1 text-left text-[0.8rem] cursor-pointer ${header.column.columnDef.meta.width}`} onClick={handler}>{header.column.columnDef.header}</th>
               }
             }
             )}</tr>
