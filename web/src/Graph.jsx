@@ -69,7 +69,7 @@ function Graph({ data, selectedChannel, setSelectedChannel }) {
       </g>
       <g>
         {nodes.map(({ id, x, y, follower, name }) => (
-          <text key={id} x={x} y={y + scaleRadius(follower) + 20} textAnchor='middle' className='dark:fill-gray-300'>{name}</text>
+          <text key={id} x={x} y={y + scaleRadius(follower) + 20} textAnchor='middle' className='cursor-default dark:fill-gray-300'>{name}</text>
         ))}
       </g>
     </>
