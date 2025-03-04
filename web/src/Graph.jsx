@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import * as d3 from 'd3';
 
+const IMAGE_FALLBACK = 'https://ssl.pstatic.net/cmstatic/nng/img/img_anonymous_square_gray_opacity2x.png?type=f120_120_na';
+
 export function GraphContainer({ data, selectedChannel, setSelectedChannel, svgRef, rootRef }) {
   return (
     <svg ref={svgRef} className='w-screen h-screen dark:bg-gray-700'>
@@ -53,7 +55,7 @@ function Graph({ data, selectedChannel, setSelectedChannel }) {
       <defs>
         {nodes.map(({ id, image }) => (
           <pattern key={id} id={id} width='1' height='1' patternContentUnits='objectBoundingBox'>
-            <image href={image} width='1' height='1' preserveAspectRatio='xMidYMid slice'></image>
+            <image href={image || IMAGE_FALLBACK} width='1' height='1' preserveAspectRatio='xMidYMid slice'></image>
           </pattern>
         ))}
       </defs>
