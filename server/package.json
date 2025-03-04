@@ -3,6 +3,7 @@
   "type": "module",
   "dependencies": {
     "better-sqlite3": "^11.8.1",
+    "cloudflare": "^4.1.0",
     "ws": "^8.18.0"
   }
 }

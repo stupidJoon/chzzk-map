@@ -3,8 +3,7 @@ import WebSocket from 'ws';
 
 index();
 async function index() {
-  let lives = await getLives(1000);
-  console.log(lives[0], lives.length);
+  let lives = await getLives(process.env.MIN_LIVE_USER);
 
   lives.forEach((live) => {
     getChats(live);
@@ -55,13 +54,14 @@ async function getLives(minUser) {
     ]);
     live.chatChannelId = chatChannelId;
     live.channel.followerCount = followerCount;
-    console.log(live.channel.channelName);
   }
 
   lives.forEach((live) => db.insertChannel(live.channel));
 
   const scrapingLives = db.selectScrapingLives();
   lives = lives.filter((live) => scrapingLives.every((scrapingLive) => scrapingLive.channelId !== live.channel.channelId));
+
+  console.log('lives:', lives.length);
 
   return lives;
 }
@@ -93,14 +93,16 @@ const pingMsg = `
 }
 `;
 function getChats(live) {
+  console.log('chat opened!', live);
+
   db.insertScrapingLives(live)
   const ws = new WebSocket('wss://kr-ss1.chat.naver.com/chat');
 
   ws.on('error', console.log);
 
   ws.on('close', () => {
+    console.log('chat closed!', live);
     db.deleteScrapingLives(live);
-    console.log('closed!', live);
   });
   
   ws.on('open', () => ws.send(getInitMsg(live.chatChannelId,)));

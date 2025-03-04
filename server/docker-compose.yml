@@ -1,0 +1,14 @@
+services:
+  chzzk-map:
+    container_name: chzzk-map
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DB_PATH:
+      MIN_LIVE_USER:
+      CF_API_EMAIL:
+      CF_API_KEY:
+      CF_ACCOUNT_ID:
+      CF_KV_NAMESPACE:
+      CF_KV_KEY:

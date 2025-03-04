@@ -6,7 +6,7 @@ CREATE TABLE channel (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   follower INTEGER NOT NULL,
-  image TEXT NOT NULL,
+  image TEXT,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE chat (
