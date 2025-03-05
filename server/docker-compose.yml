@@ -3,12 +3,16 @@ services:
     container_name: chzzk-map
     build:
       context: .
+      args:
+        CRON_SCRAPER: ${CRON_SCRAPER}
+        CRON_UPLOADER: ${CRON_UPLOADER}
       dockerfile: Dockerfile
     environment:
-      DB_PATH:
-      MIN_LIVE_USER:
-      CF_API_EMAIL:
-      CF_API_KEY:
-      CF_ACCOUNT_ID:
-      CF_KV_NAMESPACE:
-      CF_KV_KEY:
+      DB_PATH: ${DB_PATH}
+      MIN_LIVE_USER: ${MIN_LIVE_USER}
+      MIN_UPLOADER_DAYS: ${MIN_UPLOADER_DAYS}
+      CF_API_EMAIL: ${CF_API_EMAIL}
+      CF_API_KEY: ${CF_API_KEY}
+      CF_ACCOUNT_ID: ${CF_ACCOUNT_ID}
+      CF_KV_NAMESPACE: ${CF_KV_NAMESPACE}
+      CF_KV_KEY: ${CF_KV_KEY}

@@ -9,7 +9,7 @@ async function index() {
   });
 
   const nodes = db.selectNodes();
-  const distances = db.selectDistances();
+  const links = db.selectLinks();
   const updateTime = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().replace('T', ' ').replace('Z', '').split('.')[0];
 
   const value = await client.kv.namespaces.values.update(
@@ -17,8 +17,8 @@ async function index() {
     process.env.CF_KV_KEY,
     {
       account_id: process.env.CF_ACCOUNT_ID,
-      updateTime, nodes, distances,
+      updateTime, nodes, links,
     }
   );
-  console.log(updateTime, value);
+  console.log(updateTime, value, nodes);
 }

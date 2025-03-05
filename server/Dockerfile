@@ -1,13 +1,16 @@
 FROM ubuntu:24.04
 
+ARG CRON_SCRAPER
+ARG CRON_UPLOADER
+
 WORKDIR /app
 
-COPY package.json package-lock.json scraper.js upload.js db.js schema.sql /app
+COPY package.json package-lock.json scraper.js uploader.js db.js schema.sql /app
 
 RUN touch sqlite.db &&\
     apt update && apt install -y cron &&\
-    (crontab -l 2>/dev/null; echo "*/5 * * * * /usr/bin/node /app/scraper.js >> /app/scraper.log 2>&1") | crontab - &&\
-    (crontab -l 2>/dev/null; echo "0 * * * * /usr/bin/node /app/upload.js >> /app/upload.log 2>&1") | crontab - &&\
+    (crontab -l 2>/dev/null; echo "$CRON_SCRAPER /usr/bin/node /app/scraper.js >> /app/scraper.log 2>&1") | crontab - &&\
+    (crontab -l 2>/dev/null; echo "$CRON_UPLOADER /usr/bin/node /app/uploader.js >> /app/uploader.log 2>&1") | crontab - &&\
     apt install -y sqlite3 &&\
     sqlite3 sqlite.db < schema.sql &&\
     apt install -y curl &&\

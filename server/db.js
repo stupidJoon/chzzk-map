@@ -47,7 +47,7 @@ export function selectNodes() {
     valid_channel AS (
       SELECT DISTINCT c.channel_id cid
       FROM chat c
-      WHERE c.updated_at >= DATETIME('now', '-7 days')
+      WHERE c.updated_at >= DATETIME('now', '-${process.env.MIN_UPLOADER_DAYS}')
     )
     SELECT c.id id, c.name name, c.follower follower, c.image image
     FROM valid_channel vc
@@ -56,7 +56,7 @@ export function selectNodes() {
   return db.prepare(sql).all();
 }
 
-export function selectDistances() {
+export function selectLinks() {
   const sql = `
     WITH
     valid_chat AS (
