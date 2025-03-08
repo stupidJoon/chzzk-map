@@ -20,5 +20,5 @@ async function index() {
       updateTime, nodes, links,
     }
   );
-  console.log(updateTime, value, nodes);
+  console.log(updateTime, value, nodes.length, links.length);
 }

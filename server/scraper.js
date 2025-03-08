@@ -1,15 +1,36 @@
 import * as db from './db.js';
+import { from } from 'rxjs';
+import { filter, concatMap, tap, toArray } from 'rxjs/operators';
 import WebSocket from 'ws';
 
 index();
 async function index() {
-  let lives = await getLives(process.env.MIN_LIVE_USER);
+  const lives = await fetchLivesPages(1000);
+  const scrapingLives = db.selectScrapingLives();
 
-  lives.forEach((live) => {
-    getChats(live);
-  });
+  const observable = from(lives).pipe(
+    filter((live) => live.adult === false),
+    concatMap(async (live) => {
+      await sleep(1000);
+      const { chatChannelId } = await fetchLiveDetail(live.channel.channelId);
+      return { ...live, chatChannelId };
+    }),
+    concatMap(async (live) => {
+      const { followerCount } = await fetchChannel(live.channel.channelId);
+      return { ...live, channel: { ...live.channel, followerCount } };
+    }),
+    tap((live) => db.insertChannel(live.channel)),
+    filter((live) => scrapingLives.every((scrapingChannel) => scrapingChannel.channelId !== live.channel.channelId)),
+    tap((live) => getChats(live)),
+  );
+
+  observable.subscribe();
 }
 
+function log(...args) {
+  const now = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().replace('T', ' ').replace('Z', '').split('.')[0];
+  console.log(now, ...args);
+}
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -41,30 +62,6 @@ async function fetchChannel(channelId) {
   const json = await fetch(url, { headers: { 'User-Agent': 'Mozilla' } }).then((res) => res.json());
   return json.content;
 }
-async function getLives(minUser) {
-  let lives = await fetchLivesPages(minUser);
-
-  lives = lives.filter((live) => live.adult === false);
-
-  for (const live of lives) {
-    const [{ chatChannelId }, { followerCount }] = await Promise.all([
-      fetchLiveDetail(live.channel.channelId),
-      fetchChannel(live.channel.channelId),
-      sleep(100),
-    ]);
-    live.chatChannelId = chatChannelId;
-    live.channel.followerCount = followerCount;
-  }
-
-  lives.forEach((live) => db.insertChannel(live.channel));
-
-  const scrapingLives = db.selectScrapingLives();
-  lives = lives.filter((live) => scrapingLives.every((scrapingLive) => scrapingLive.channelId !== live.channel.channelId));
-
-  console.log('lives:', lives.length);
-
-  return lives;
-}
 
 const getInitMsg = (cid) => `
 {
@@ -89,30 +86,43 @@ const getInitMsg = (cid) => `
 const pingMsg = `
 {
   "ver":"3",
+  "cmd":0
+}
+`;
+const pongMsg = `
+{
+  "ver":"3",
   "cmd":10000
 }
 `;
 function getChats(live) {
-  console.log('chat opened!', live);
+  log('chat opened!', live);
 
   db.insertScrapingLives(live)
   const ws = new WebSocket('wss://kr-ss1.chat.naver.com/chat');
 
-  ws.on('error', console.log);
+  const interval = setInterval(async () => {
+    const { openLive } = await fetchChannel(live.channel.channelId);
+    if (!openLive) return ws.close();
+    if (ws.readyState !== WebSocket.OPEN) return;
+    ws.send(pingMsg);
+  }, 20 * 1000);
+
+  ws.on('error', log);
 
   ws.on('close', () => {
-    console.log('chat closed!', live);
+    log('chat closed!', live);
     db.deleteScrapingLives(live);
+    clearInterval(interval);
   });
   
   ws.on('open', () => ws.send(getInitMsg(live.chatChannelId,)));
 
   ws.on('message', (data) => {
-    console.log(JSON.parse(data.toString('utf8')));
     const { cmd, bdy } = JSON.parse(data.toString('utf8'));
 
     if (cmd === 0) {
-      ws.send(pingMsg);
+      ws.send(pongMsg);
     }
     else if (cmd === 93101) {
       bdy.forEach((chat) => {
