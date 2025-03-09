@@ -5,7 +5,7 @@ import WebSocket from 'ws';
 
 index();
 async function index() {
-  const lives = await fetchLivesPages(1000);
+  const lives = await fetchLivesPages(process.env.MIN_LIVE_USER);
   const scrapingLives = db.selectScrapingLives();
 
   const observable = from(lives).pipe(
