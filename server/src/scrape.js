@@ -4,7 +4,8 @@ import * as db from './db.js';
 const scrapingChannels = new Set();
 
 export async function scanChannels() {
-  let lives = await fetchLivesPages(process.env.MIN_LIVE_USER);
+  // let lives = await fetchLivesPages(process.env.MIN_LIVE_USER);
+  let lives = await fetchLivesPages(1000);
 
   lives = lives.filter((live) => live.adult === false);
   
@@ -13,14 +14,12 @@ export async function scanChannels() {
     const { chatChannelId } = await fetchLiveDetail(live.channel.channelId);
     return { ...live, chatChannelId, channel: { ...live.channel, followerCount } };
   });
-  lives = lives.filter((live) => live.channel.followerCount !== undefined);
-  lives = lives.filter((live) => live.chatChannelId !== undefined);
   
   lives.forEach((live) => db.insertChannel(live.channel));
 
   lives = lives.filter((live) => !scrapingChannels.has(live.channel.channelId));
   
-  lives.forEach((live) => scrapeChats(live));
+  lives.forEach((live) => listenChats(live, (chats) => db.insertChats(live, chats)));
 }
 
 function log(...args) {
@@ -30,8 +29,14 @@ function log(...args) {
 async function sequentialMap(array, asyncCallback) {
   return array.reduce(async (accPromise, item) => {
     const acc = await accPromise;
-    const result = await asyncCallback(item);
-    return [...acc, result];
+    try {
+      const result = await asyncCallback(item);
+      return [...acc, result];
+    }
+    catch (err) {
+      log(err);
+      return acc;
+    }
   }, Promise.resolve([]));
 }
 
@@ -55,30 +60,13 @@ async function fetchLivesPages(minUser) {
 }
 async function fetchLiveDetail(channelId) {
   const url = `https://api.chzzk.naver.com/service/v3/channels/${channelId}/live-detail`;
-  try {
-    const json = await fetch(url, { headers: { 'User-Agent': 'Mozilla' } }).then((res) => res.json());
-    // TypeError: Cannot destructure property 'chatChannelId' of '(intermediate value)' as it is undefined. 에러 발생
-    return json.content ?? {};
-  } catch (e) {
-    log('fetchLiveDetail() Fetch Error!', e);
-    return {};
-  }
+  const json = await fetch(url, { headers: { 'User-Agent': 'Mozilla' } }).then((res) => res.json());
+  return json.content;
 }
 async function fetchChannel(channelId) {
   const url = `https://api.chzzk.naver.com/service/v1/channels/${channelId}`;
-  try {
-    const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla' } });
-    const json = await res.json()
-    if (json?.content === undefined) {
-      log('fetchChannel() JSON Error!', json);
-      return {};
-    }
-    return json.content;
-  }
-  catch (e) {
-    log('fetchChannel() Parse Error!', e);
-    return {};
-  }
+  const json = await fetch(url, { headers: { 'User-Agent': 'Mozilla' } }).then((res) => res.json());
+  return json.content;
 }
 
 const WS_MSG = {
@@ -109,7 +97,7 @@ const WS_MSG = {
     cmd: 10000,
   },
 }
-function scrapeChats(live) {
+function listenChats(live, cb) {
   const ws = new WebSocket('wss://kr-ss1.chat.naver.com/chat');
 
   const interval = setInterval(async () => {
@@ -121,25 +109,21 @@ function scrapeChats(live) {
 
   ws.on('error', log);
 
-  ws.on('open', () => {
+  ws.on('open', async () => {
     ws.send(JSON.stringify(WS_MSG.INIT(live.chatChannelId)));
-    scrapingChannels.add(live.channel.channelId)
-    log('Opened!', live.channel.channelId, scrapingChannels);
+    scrapingChannels.add(live.channel.channelId);
+    log('Opened!', live.channel.channelId, scrapingChannels, await fetchChannel(live.channel.channelId));
   });
 
-  ws.on('close', () => {
+  ws.on('close', async (event) => {
     clearInterval(interval);
     scrapingChannels.delete(live.channel.channelId);
-    log('Closed!', live.channel.channelId, scrapingChannels);
+    log('Closed!', live.channel.channelId, scrapingChannels, event, await fetchChannel(live.channel.channelId));
   });
 
   ws.on('message', (data) => {
     const { cmd, bdy } = JSON.parse(data.toString('utf8'));
-    if (cmd === 0) return ws.send(JSON.stringify(WS_MSG.PONG));
-    else if (cmd === 93101) {
-      bdy.forEach((chat) => {
-        db.insertChat({ channelId: live.channel.channelId, userId: chat.uid });
-      });
-    }
+    if (cmd === 0) ws.send(JSON.stringify(WS_MSG.PONG));
+    else if (cmd === 93101) cb(bdy);
   });
 }
