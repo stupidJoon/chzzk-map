@@ -2,10 +2,11 @@
   "private": "true",
   "type": "module",
   "dependencies": {
-    "better-sqlite3": "^12.2.0",
-    "cloudflare": "^4.4.1",
-    "dotenv": "^17.0.1",
-    "node-cron": "^4.2.0",
-    "ws": "^8.18.3"
+    "cloudflare": "^7.1.0",
+    "dotenv": "^17.4.2",
+    "node-cron": "^4.6.0",
+    "pino": "^10.3.1",
+    "redis": "^6.2.1",
+    "undici": "^8.10.0"
   }
 }

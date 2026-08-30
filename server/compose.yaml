@@ -1,0 +1,28 @@
+services:
+  node:
+    image: node:26-alpine
+    working_dir: /app
+    command: sh -c "npm i && node ./src/index.js"
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      CF_ACCOUNT_ID: ${CF_ACCOUNT_ID}
+      CF_API_TOKEN: ${CF_API_TOKEN}
+      CF_KV_NAMESPACE: ${CF_KV_NAMESPACE}
+      CF_KV_KEY: ${CF_KV_KEY}
+    volumes:
+      - .:/app
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+volumes:
+  redis-data:
